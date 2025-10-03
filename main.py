@@ -56,6 +56,7 @@ def main():
             frequency=frequency_hz, device_args=args.device, rf_gain=args.gain
         )
 
+    # シグナルハンドラの設定
     def sig_handler(sig=None, frame=None):
         demodulator.stop()
         demodulator.wait()
@@ -65,6 +66,7 @@ def main():
     signal.signal(signal.SIGINT, sig_handler)
     signal.signal(signal.SIGTERM, sig_handler)
 
+    # 受信の開始
     demodulator.start()
     demodulator.flowgraph_started.set()
 
