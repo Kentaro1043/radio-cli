@@ -2,6 +2,7 @@ import argparse
 import signal
 import sys
 
+from pkg.am_reception import am_reception
 from pkg.fm_reception import fm_reception
 
 
@@ -11,8 +12,7 @@ def main():
     parser.add_argument(
         "freqency",
         type=float,
-        default=82.5,
-        help="受信する周波数（MHz単位, 例: 82.5）。",
+        help="受信する周波数（MHzまたはkHz）。FMの場合はMHz、AMの場合はkHzで指定してください。",
     )
     parser.add_argument(
         "--type",
@@ -36,20 +36,25 @@ def main():
         help="RFゲインの設定値。省略時は20。",
     )
     args = parser.parse_args()
-    frequency_hz = args.freqency * 1e6
+    if args.type == "fm":
+        frequency_hz = args.freqency * 1e6  # MHzをHzに変換
+    else:
+        frequency_hz = args.freqency * 1e3  # kHzをHzに変換
 
     # 変調方式に応じた受信モジュールの初期化
     if args.type not in ["fm", "am"]:
         print("エラー: 変調方式は'fm'または'am'で指定してください。")
         sys.exit(1)
     elif args.type == "am":
-        print("エラー: AM変調は現在サポートされていません。")
-        sys.exit(1)
+        print(f"AM変調で{args.freqency}kHzを受信します。")
+        demodulator = am_reception(
+            device_args=args.device, freqency=frequency_hz, rf_gain=args.gain
+        )
     else:
         print(f"FM変調で{args.freqency}MHzを受信します。")
-        demodulator = fm_reception(frequency=frequency_hz)
-
-    demodulator.set_frequency(frequency_hz)
+        demodulator = fm_reception(
+            frequency=frequency_hz, device_args=args.device, rf_gain=args.gain
+        )
 
     def sig_handler(sig=None, frame=None):
         demodulator.stop()
