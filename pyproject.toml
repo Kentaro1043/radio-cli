@@ -1,0 +1,7 @@
+[project]
+name = "radio-cli"
+version = "0.1.0"
+description = "Radio Reception Program"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
